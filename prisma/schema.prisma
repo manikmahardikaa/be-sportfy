@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum JenisPengguna {
+  ADMIN
+  PELANGGAN
+}
+
+model User {
+  user_id        Int           @id @default(autoincrement())
+  jenis_pengguna JenisPengguna @default(PELANGGAN)
+  nama_penguna   String
+  email          String        @unique
+  kata_sandi     String
+  alamat         String?
+  gender         String?
+  tgl_lahir      DateTime?
+  no_telp        String?
+
+  reservasis     Reservasi[]   @relation("UserReservasi")
+}
+
+model Reservasi {
+  id_reservasi Int      @id @default(autoincrement())
+  id_pengguna  Int
+  id_lapangan  Int
+  id_sesi      Int
+  tgl_sewa     DateTime
+  pembayaran   Int
+
+  user         User     @relation("UserReservasi", fields: [id_pengguna], references: [user_id])
+  lapangan     Lapangan @relation("LapanganReservasi", fields: [id_lapangan], references: [id_lapangan])
+  sesi         Sesi     @relation("SesiReservasi", fields: [id_sesi], references: [id_sesi])
+}
+
+model Sesi {
+  id_sesi       Int      @id @default(autoincrement())
+  waktu_mulai   DateTime
+  waktu_selesai DateTime
+
+  reservasis    Reservasi[] @relation("SesiReservasi")
+}
+
+model Lapangan {
+  id_lapangan     Int          @id @default(autoincrement())
+  id_jenislap     Int
+  nama_lapanagn   String?
+  deskripsi       String?
+  alamat_lapangan String?
+  harga_sewa      Int?
+  gambar_lapangan String? @db.LongText
+
+  reservasis      Reservasi[] @relation("LapanganReservasi")
+
+  jenis_lapangan  JenisLapangan @relation(fields: [id_jenislap], references: [id_jenislap])
+}
+
+model JenisLapangan {
+  id_jenislap    Int        @id @default(autoincrement())
+  jenis_lapangan String
+
+  lapangans      Lapangan[] @relation
+}
